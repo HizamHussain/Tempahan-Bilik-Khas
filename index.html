@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    form { display: grid; gap: 15px; }
+    input, select, button { padding: 10px; }
+    button { background: #4285F4; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>📅 Tempahan Bilik Sekolah</h2>
+  <form id="bookingForm">
+    <input type="text" id="nama" placeholder="Nama Guru" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <select id="bilik" required>
+      <option value="">Pilih Bilik</option>
+      <option value="Bilik Mesyuarat">Bilik Mesyuarat</option>
+      <option value="Makmal Komputer">Makmal Komputer</option>
+      <option value="Bilik Guru">Bilik Guru</option>
+    </select>
+    <input type="date" id="tarikh" required>
+    <input type="time" id="masaDari" required>
+    <input type="time" id="masaHingga" required>
+    <input type="text" id="tujuan" placeholder="Tujuan" required>
+    <button type="submit">Hantar Tempahan</button>
+  </form>
+  <div id="output"></div>
+
+  <script>
+    document.getElementById("bookingForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const data = {
+        nama: document.getElementById("nama").value,
+        email: document.getElementById("email").value,
+        bilik: document.getElementById("bilik").value,
+        tarikh: document.getElementById("tarikh").value,
+        masaDari: document.getElementById("masaDari").value,
+        masaHingga: document.getElementById("masaHingga").value,
+        tujuan: document.getElementById("tujuan").value
+      };
+      google.script.run
+        .withSuccessHandler(() => {
+          document.getElementById("output").innerHTML = "✅ Tempahan berjaya dihantar!";
+          document.getElementById("bookingForm").reset();
+        })
+        .withFailureHandler((err) => {
+          document.getElementById("output").innerHTML = "❌ Ralat: " + err.message;
+        })
+        .saveToSheet(data);
+    });
+  </script>
+</body>
+</html>
