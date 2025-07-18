@@ -1,55 +1,548 @@
 <!DOCTYPE html>
-<html>
+<html lang="ms">
 <head>
-  <base target="_top">
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-    form { display: grid; gap: 15px; }
-    input, select, button { padding: 10px; }
-    button { background: #4285F4; color: white; border: none; cursor: pointer; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Tempahan Bilik Khas Sekolah</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 85%;
+            margin: auto;
+            overflow: hidden;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: #e8491d 3px solid;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            display: inline;
+            padding: 0 20px 0 20px;
+        }
+        .button {
+            display: inline-block;
+            font-size: 15px;
+            padding: 10px 20px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            outline: none;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+        }
+        .button:hover {background-color: #3e8e41}
+        .button:active {
+            background-color: #3e8e41;
+            transform: translateY(2px);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 0.9em;
+            min-width: 400px;
+            border-radius: 5px 5px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+        table thead tr {
+            background-color: #35424a;
+            color: #ffffff;
+            text-align: left;
+            font-weight: bold;
+        }
+        table th, table td {
+            padding: 12px 15px;
+        }
+        table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        table tbody tr:last-of-type {
+            border-bottom: 2px solid #35424a;
+        }
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            background-color: white;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+        .success {
+            color: green;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-  <h2>📅 Tempahan Bilik Sekolah</h2>
-  <form id="bookingForm">
-    <input type="text" id="nama" placeholder="Nama Guru" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <select id="bilik" required>
-      <option value="">Pilih Bilik</option>
-      <option value="Bilik Mesyuarat">Bilik Mesyuarat</option>
-      <option value="Makmal Komputer">Makmal Komputer</option>
-      <option value="Bilik Guru">Bilik Guru</option>
-    </select>
-    <input type="date" id="tarikh" required>
-    <input type="time" id="masaDari" required>
-    <input type="time" id="masaHingga" required>
-    <input type="text" id="tujuan" placeholder="Tujuan" required>
-    <button type="submit">Hantar Tempahan</button>
-  </form>
-  <div id="output"></div>
+    <header>
+        <div class="container">
+            <h1>Sistem Tempahan Bilik Khas Sekolah</h1>
+            <nav>
+                <ul>
+                    <li><a href="#" onclick="openTab(event, 'tempah')">Tempah Bilik</a></li>
+                    <li><a href="#" onclick="openTab(event, 'senarai')">Senarai Tempahan</a></li>
+                    <li><a href="#" onclick="openTab(event, 'slot')">Slot Kosong</a></li>
+                    <li><a href="#" onclick="openTab(event, 'admin')">Admin</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
 
-  <script>
-    document.getElementById("bookingForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const data = {
-        nama: document.getElementById("nama").value,
-        email: document.getElementById("email").value,
-        bilik: document.getElementById("bilik").value,
-        tarikh: document.getElementById("tarikh").value,
-        masaDari: document.getElementById("masaDari").value,
-        masaHingga: document.getElementById("masaHingga").value,
-        tujuan: document.getElementById("tujuan").value
-      };
-      google.script.run
-        .withSuccessHandler(() => {
-          document.getElementById("output").innerHTML = "✅ Tempahan berjaya dihantar!";
-          document.getElementById("bookingForm").reset();
-        })
-        .withFailureHandler((err) => {
-          document.getElementById("output").innerHTML = "❌ Ralat: " + err.message;
-        })
-        .saveToSheet(data);
-    });
-  </script>
+    <div class="container">
+        <!-- Tab Tempah -->
+        <div id="tempah" class="tabcontent">
+            <h2>Tempahan Bilik Baru</h2>
+            <form id="tempahanForm">
+                <div class="form-group">
+                    <label for="guru_id">ID Guru:</label>
+                    <input type="text" id="guru_id" required>
+                </div>
+                <div class="form-group">
+                    <label for="tarikh">Tarikh:</label>
+                    <input type="date" id="tarikh" required>
+                </div>
+                <div class="form-group">
+                    <label for="masa_mula">Masa Mula:</label>
+                    <input type="time" id="masa_mula" required>
+                </div>
+                <div class="form-group">
+                    <label for="masa_tamat">Masa Tamat:</label>
+                    <input type="time" id="masa_tamat" required>
+                </div>
+                <div class="form-group">
+                    <label for="bilik">Bilik:</label>
+                    <select id="bilik" required>
+                        <option value="">-- Pilih Bilik --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tujuan">Tujuan:</label>
+                    <input type="text" id="tujuan" required>
+                </div>
+                <button type="submit" class="button">Tempah</button>
+                <div id="tempahanMessage" class="message"></div>
+            </form>
+        </div>
+
+        <!-- Tab Senarai Tempahan -->
+        <div id="senarai" class="tabcontent">
+            <h2>Senarai Tempahan Sedia Ada</h2>
+            <div class="form-group">
+                <label for="filterTarikh">Filter Tarikh:</label>
+                <input type="date" id="filterTarikh" onchange="filterTempahan()">
+            </div>
+            <table id="senaraiTempahan">
+                <thead>
+                    <tr>
+                        <th>Tarikh</th>
+                        <th>Masa</th>
+                        <th>Bilik</th>
+                        <th>Guru</th>
+                        <th>Tujuan</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Tab Slot Kosong -->
+        <div id="slot" class="tabcontent">
+            <h2>Slot Tempahan Kosong</h2>
+            <div class="form-group">
+                <label for="slotTarikh">Tarikh:</label>
+                <input type="date" id="slotTarikh" onchange="cariSlotKosong()">
+            </div>
+            <table id="slotKosong">
+                <thead>
+                    <tr>
+                        <th>Bilik</th>
+                        <th>Slot Masa Kosong</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Tab Admin -->
+        <div id="admin" class="tabcontent">
+            <h2>Pengurusan Guru</h2>
+            <form id="adminForm">
+                <div class="form-group">
+                    <label for="adminGuruId">ID Guru:</label>
+                    <input type="text" id="adminGuruId" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminNamaGuru">Nama Guru:</label>
+                    <input type="text" id="adminNamaGuru" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminEmail">Email:</label>
+                    <input type="email" id="adminEmail" required>
+                </div>
+                <button type="button" class="button" onclick="tambahGuru()">Tambah Guru</button>
+                <button type="button" class="button" onclick="padamGuru()">Padam Guru</button>
+                <div id="adminMessage" class="message"></div>
+            </form>
+            
+            <h3>Senarai Guru</h3>
+            <table id="senaraiGuru">
+                <thead>
+                    <tr>
+                        <th>ID Guru</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // URL Google Apps Script yang akan anda buat nanti
+        const scriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+        
+        // Buka tab default
+        document.addEventListener('DOMContentLoaded', function() {
+            openTab(null, 'tempah');
+            muatBilik();
+            muatTempahan();
+            muatGuru();
+        });
+
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            
+            tablinks = document.getElementsByTagName("a");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(tabName).style.display = "block";
+            if (evt) evt.currentTarget.className += " active";
+        }
+
+        // Muat senarai bilik dari Google Sheet
+        function muatBilik() {
+            axios.get(scriptUrl, {
+                params: {
+                    action: 'getBilik'
+                }
+            })
+            .then(response => {
+                const bilikSelect = document.getElementById('bilik');
+                response.data.forEach(bilik => {
+                    const option = document.createElement('option');
+                    option.value = bilik.Nama_Bilik;
+                    option.textContent = bilik.Nama_Bilik + ' (' + bilik.Fasiliti + ')';
+                    bilikSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading bilik:', error);
+            });
+        }
+
+        // Muat senarai tempahan dari Google Sheet
+        function muatTempahan() {
+            axios.get(scriptUrl, {
+                params: {
+                    action: 'getTempahan'
+                }
+            })
+            .then(response => {
+                const tbody = document.querySelector('#senaraiTempahan tbody');
+                tbody.innerHTML = '';
+                
+                response.data.forEach(tempahan => {
+                    if (tempahan.Status === 'Aktif') {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${tempahan.Tarikh}</td>
+                            <td>${tempahan.Masa_Mula} - ${tempahan.Masa_Tamat}</td>
+                            <td>${tempahan.Bilik}</td>
+                            <td>${tempahan.Guru_ID}</td>
+                            <td>${tempahan.Tujuan}</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading tempahan:', error);
+            });
+        }
+
+        // Muat senarai guru dari Google Sheet
+        function muatGuru() {
+            axios.get(scriptUrl, {
+                params: {
+                    action: 'getGuru'
+                }
+            })
+            .then(response => {
+                const tbody = document.querySelector('#senaraiGuru tbody');
+                tbody.innerHTML = '';
+                
+                response.data.forEach(guru => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${guru.Guru_ID}</td>
+                        <td>${guru.Nama_Guru}</td>
+                        <td>${guru.Email}</td>
+                        <td>${guru.Status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading guru:', error);
+            });
+        }
+
+        // Filter tempahan berdasarkan tarikh
+        function filterTempahan() {
+            const tarikh = document.getElementById('filterTarikh').value;
+            if (!tarikh) {
+                muatTempahan();
+                return;
+            }
+            
+            axios.get(scriptUrl, {
+                params: {
+                    action: 'getTempahanByDate',
+                    tarikh: tarikh
+                }
+            })
+            .then(response => {
+                const tbody = document.querySelector('#senaraiTempahan tbody');
+                tbody.innerHTML = '';
+                
+                response.data.forEach(tempahan => {
+                    if (tempahan.Status === 'Aktif') {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${tempahan.Tarikh}</td>
+                            <td>${tempahan.Masa_Mula} - ${tempahan.Masa_Tamat}</td>
+                            <td>${tempahan.Bilik}</td>
+                            <td>${tempahan.Guru_ID}</td>
+                            <td>${tempahan.Tujuan}</td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error filtering tempahan:', error);
+            });
+        }
+
+        // Cari slot kosong
+        function cariSlotKosong() {
+            const tarikh = document.getElementById('slotTarikh').value;
+            if (!tarikh) return;
+            
+            axios.get(scriptUrl, {
+                params: {
+                    action: 'getSlotKosong',
+                    tarikh: tarikh
+                }
+            })
+            .then(response => {
+                const tbody = document.querySelector('#slotKosong tbody');
+                tbody.innerHTML = '';
+                
+                response.data.forEach(slot => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${slot.Bilik}</td>
+                        <td>${slot.Slot_Kosong}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error finding slots:', error);
+            });
+        }
+
+        // Handle form tempahan
+        document.getElementById('tempahanForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const tempahan = {
+                guru_id: document.getElementById('guru_id').value,
+                tarikh: document.getElementById('tarikh').value,
+                masa_mula: document.getElementById('masa_mula').value,
+                masa_tamat: document.getElementById('masa_tamat').value,
+                bilik: document.getElementById('bilik').value,
+                tujuan: document.getElementById('tujuan').value
+            };
+            
+            // Validasi masa
+            if (tempahan.masa_mula >= tempahan.masa_tamat) {
+                document.getElementById('tempahanMessage').textContent = 'Masa tamat mesti selepas masa mula';
+                document.getElementById('tempahanMessage').className = 'error';
+                return;
+            }
+            
+            axios.post(scriptUrl, {
+                action: 'createTempahan',
+                data: tempahan
+            })
+            .then(response => {
+                if (response.data.success) {
+                    document.getElementById('tempahanMessage').textContent = 'Tempahan berjaya!';
+                    document.getElementById('tempahanMessage').className = 'success';
+                    document.getElementById('tempahanForm').reset();
+                    muatTempahan();
+                } else {
+                    document.getElementById('tempahanMessage').textContent = response.data.message;
+                    document.getElementById('tempahanMessage').className = 'error';
+                }
+            })
+            .catch(error => {
+                document.getElementById('tempahanMessage').textContent = 'Ralat: ' + error.message;
+                document.getElementById('tempahanMessage').className = 'error';
+            });
+        });
+
+        // Tambah guru baru
+        function tambahGuru() {
+            const guru = {
+                guru_id: document.getElementById('adminGuruId').value,
+                nama: document.getElementById('adminNamaGuru').value,
+                email: document.getElementById('adminEmail').value
+            };
+            
+            axios.post(scriptUrl, {
+                action: 'addGuru',
+                data: guru
+            })
+            .then(response => {
+                if (response.data.success) {
+                    document.getElementById('adminMessage').textContent = 'Guru berjaya ditambah!';
+                    document.getElementById('adminMessage').className = 'success';
+                    document.getElementById('adminForm').reset();
+                    muatGuru();
+                } else {
+                    document.getElementById('adminMessage').textContent = response.data.message;
+                    document.getElementById('adminMessage').className = 'error';
+                }
+            })
+            .catch(error => {
+                document.getElementById('adminMessage').textContent = 'Ralat: ' + error.message;
+                document.getElementById('adminMessage').className = 'error';
+            });
+        }
+
+        // Padam guru
+        function padamGuru() {
+            const guruId = document.getElementById('adminGuruId').value;
+            if (!guruId) {
+                document.getElementById('adminMessage').textContent = 'Sila masukkan ID Guru';
+                document.getElementById('adminMessage').className = 'error';
+                return;
+            }
+            
+            if (!confirm(`Adakah anda pasti ingin memadam guru dengan ID ${guruId}?`)) {
+                return;
+            }
+            
+            axios.post(scriptUrl, {
+                action: 'deleteGuru',
+                guru_id: guruId
+            })
+            .then(response => {
+                if (response.data.success) {
+                    document.getElementById('adminMessage').textContent = 'Guru berjaya dipadam!';
+                    document.getElementById('adminMessage').className = 'success';
+                    document.getElementById('adminForm').reset();
+                    muatGuru();
+                } else {
+                    document.getElementById('adminMessage').textContent = response.data.message;
+                    document.getElementById('adminMessage').className = 'error';
+                }
+            })
+            .catch(error => {
+                document.getElementById('adminMessage').textContent = 'Ralat: ' + error.message;
+                document.getElementById('adminMessage').className = 'error';
+            });
+        }
+    </script>
 </body>
 </html>
